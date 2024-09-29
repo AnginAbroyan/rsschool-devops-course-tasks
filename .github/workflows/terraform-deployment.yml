@@ -69,7 +69,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::767397941516:role/GithubActionsRole  # Update with your role ARN
-          aws-region: us-west-2  # Change this to your desired AWS region
+          aws-region: eu-west-3  # Change this to your desired AWS region
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
