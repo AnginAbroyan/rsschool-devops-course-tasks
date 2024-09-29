@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     bucket         = "terraform-rs-bucket--anabroyan123456"
     key            = "terraform/state"
-    region         = "eu-west-3"  # Adjust this to your region
+    region         = "eu-west-3" # Adjust this to your region
     encrypt        = true
     dynamodb_table = "DynamoDB-table-state-locks123456"
   }

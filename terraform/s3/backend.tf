@@ -1,5 +1,5 @@
 data "aws_iam_role" "github_actions_role" {
-  name = "GithubActionsRole"  # the name of my IAM role
+  name = "GithubActionsRole" # the name of my IAM role
 }
 
 # The backend
@@ -66,7 +66,7 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect    = "Allow"
+        Effect = "Allow"
         Principal = {
           AWS = data.aws_iam_role.github_actions_role.arn
         }

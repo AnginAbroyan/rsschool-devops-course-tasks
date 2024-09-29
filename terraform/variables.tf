@@ -1,5 +1,5 @@
 variable "region" {
-  default = "eu-west-3"  # Paris
+  default = "eu-west-3" # Paris
 }
 
 #Project
@@ -10,7 +10,7 @@ variable "project_name" {
 
 variable "tags" {
   default = {
-    Project = "terraform"
-    Terraform   = "true"
+    Project   = "terraform"
+    Terraform = "true"
   }
 }
