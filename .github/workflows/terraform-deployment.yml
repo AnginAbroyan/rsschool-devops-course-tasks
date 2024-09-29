@@ -74,7 +74,7 @@ jobs:
           aws-region: eu-west-3  # Change this to your desired AWS region
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve
         working-directory: terraform
         env:
           TF_VAR_example: ${{ secrets.EXAMPLE_SECRET }}
