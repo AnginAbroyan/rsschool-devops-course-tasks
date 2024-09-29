@@ -57,7 +57,7 @@ jobs:
         working-directory: terraform
 
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Updated to the latest version
         with:
           name: tfplan
           path: terraform/tfplan  # Ensure this path matches where tfplan is created
@@ -81,7 +81,7 @@ jobs:
           aws-region: eu-west-3  # Change this to your desired AWS region
 
       - name: Download Terraform Plan
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3  # Updated to the latest version
         with:
           name: tfplan
 
