@@ -1,92 +1,103 @@
 name: Terraform Deployment
 
 on:
-  pull_request:
-    branches:
-      - main  # Change this to your default branch if different
   push:
     branches:
-      - main  # Change this to your default branch if different
-
+      - main
+  pull_request:
 permissions:
   id-token: write
-
+  contents: read
+  pull-requests: write
+env:
+  TF_LOG: INFO
+  AWS_REGION: ${{ secrets.AWS_REGION }}
 jobs:
-  terraform-check:
+  deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Git checkout
+        uses: actions/checkout@v3
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.4  # Consistent Terraform version
-
-      - name: List Terraform Directory
-        run: ls -al terraform  # Debug step
-
-      - name: Terraform Format Check
-        run: terraform fmt -check
-        working-directory: terraform
-
-  terraform-plan:
-    runs-on: ubuntu-latest
-    needs: terraform-check  # Ensure this job runs after the check
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.4  # Use consistent version
-
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials from AWS account
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::767397941516:role/GithubActionsRole  # Update with your role ARN
-          aws-region: eu-west-3  # Change this to your desired AWS region
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHub-OIDC-TERRAFORM
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.4
+
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
 
       - name: Terraform Init
-        run: terraform init
-        working-directory: terraform
+        id: init
+        env:
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+          AWS_BUCKET_KEY_NAME: ${{ secrets.AWS_BUCKET_KEY_NAME }}
+        run: terraform init -backend-config="bucket=${AWS_BUCKET_NAME}" -backend-config="key=${AWS_BUCKET_KEY_NAME}" -backend-config="region=${AWS_REGION}"
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
-        working-directory: terraform
+        id: plan
+        run: terraform plan -no-color
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
 
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v3  # Updated to the latest version
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
-          name: tfplan
-          path: terraform/tfplan  # Ensure this path matches where tfplan is created
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
 
-  terraform-apply:
-    runs-on: ubuntu-latest
-    needs: terraform-plan
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.4  # Use consistent version
+            </details>
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::767397941516:role/GithubActionsRole  # Update with your role ARN
-          aws-region: eu-west-3  # Change this to your desired AWS region
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
-      - name: Download Terraform Plan
-        uses: actions/download-artifact@v3  # Updated to the latest version
-        with:
-          name: tfplan
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-        working-directory: terraform
-        env:
-          TF_VAR_example: ${{ secrets.EXAMPLE_SECRET }}  # Ensure your secret is set correctly
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
