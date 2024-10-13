@@ -56,7 +56,7 @@ resource "aws_route_table_association" "public_rt_assoc" {
 #Create private route table
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.vpc.id
-  count  = length((var.private_subnet_cidr))
+#  count  = length((var.private_subnet_cidr))
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gtw.id
@@ -66,9 +66,9 @@ resource "aws_route_table" "private_rt" {
 
 #Create private route table association
 resource "aws_route_table_association" "private_rt_assoc" {
-  count          = length(aws_subnet.private_subnet)
+  count          = length(aws_subnet.private_subnet[*].id)
+  route_table_id = aws_route_table.private_rt.id
   subnet_id      = aws_subnet.private_subnet[count.index].id
-  route_table_id = aws_route_table.private_rt[count.index].id
 }
 
 #Create elastic IP for NAT GW
