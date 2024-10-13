@@ -75,7 +75,7 @@ resource "aws_route_table_association" "private_rt_assoc" {
 resource "aws_eip" "nat_eip" {
 #  count  = length(var.private_subnet_cidr)
   domain = "vpc"
-  tags   = merge(var.tags, { Name = "${var.project_name}-nat-gtw-${count.index + 1}" })
+  tags   = merge(var.tags, { Name = "${var.project_name}-nat-gtw" })
 }
 
 
