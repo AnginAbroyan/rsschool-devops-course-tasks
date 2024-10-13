@@ -37,7 +37,7 @@ variable "tags" {
 ###Bastion variables
 
 variable "bastion_ami" {
-  default = "ami-023adaba598e661ac"
+  default = "ami-045a8ab02aadf4f88"
 }
 
 variable "bastion_instance_type" {
