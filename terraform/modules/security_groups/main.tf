@@ -1,18 +1,6 @@
-# Create security group for app load balancer
+# Create security group for bastion host
 resource "aws_security_group" "sg_bastion" {
   vpc_id = var.vpc_id
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
   ingress {
     from_port   = 22
     to_port     = 22
@@ -27,3 +15,4 @@ resource "aws_security_group" "sg_bastion" {
   }
   tags = merge(var.tags, { Name = "${var.project_name}-bastion-sg" })
 }
+
