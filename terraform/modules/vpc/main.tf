@@ -59,7 +59,7 @@ resource "aws_route_table" "private_rt" {
   count  = length((var.private_subnet_cidr))
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gtw[count.index].id
+    nat_gateway_id = aws_nat_gateway.nat_gtw.id
   }
   tags = merge(var.tags, { Name = "${var.project_name}-route-table-private" })
 }
