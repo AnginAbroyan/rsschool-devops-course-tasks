@@ -16,5 +16,6 @@ module "bastion" {
   project_name          = var.project_name
   subnet_id      = module.vpc.public_subnet
   ssh_key_name          = var.ssh_key_name
+  bastion_host_security_group_ids = [module.bastion.bastion_host_instance_id]
   tags                  = var.tags
 }
