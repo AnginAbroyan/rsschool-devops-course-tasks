@@ -7,3 +7,14 @@ module "vpc" {
   project_name        = var.project_name
   tags                = var.tags
 }
+
+
+module "bastion" {
+  source = "../modules/bastion"
+  bastion_ami = var.bastion_ami
+  bastion_instance_type = var.bastion_instance_type
+  project_name = var.project_name
+  public_subnet_id = module.vpc.public_subnet
+  ssh_key_name = var.ssh_key_name
+  tags = var.tags
+}
