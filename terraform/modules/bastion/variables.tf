@@ -1,13 +1,13 @@
-variable bastion_ami {}
+variable "bastion_ami" {}
 
-variable bastion_instance_type {}
+variable "bastion_instance_type" {}
 
-variable subnet_id {}
+variable "subnet_id" {}
 
-variable project_name {}
+variable "project_name" {}
 
-variable tags {}
+variable "tags" {}
 
-variable ssh_key_name {}
+variable "ssh_key_name" {}
 
-variable bastion_host_security_group_ids {}
+variable "bastion_host_security_group_ids" {}

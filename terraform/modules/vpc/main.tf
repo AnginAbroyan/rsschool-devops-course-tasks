@@ -56,7 +56,7 @@ resource "aws_route_table_association" "public_rt_assoc" {
 #Create private route table
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.vpc.id
-#  count  = length((var.private_subnet_cidr))
+  #  count  = length((var.private_subnet_cidr))
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gtw.id
@@ -73,7 +73,7 @@ resource "aws_route_table_association" "private_rt_assoc" {
 
 #Create elastic IP for NAT GW
 resource "aws_eip" "nat_eip" {
-#  count  = length(var.private_subnet_cidr)
+  #  count  = length(var.private_subnet_cidr)
   domain = "vpc"
   tags   = merge(var.tags, { Name = "${var.project_name}-nat-gtw-ip" })
 }
@@ -81,7 +81,7 @@ resource "aws_eip" "nat_eip" {
 
 #Create NAT gateway
 resource "aws_nat_gateway" "nat_gtw" {
-#  count         = length(var.private_subnet_cidr)
+  #  count         = length(var.private_subnet_cidr)
   allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.public_subnet[1].id
   tags          = merge(var.tags, { Name = "${var.project_name}-nat-gtw" })

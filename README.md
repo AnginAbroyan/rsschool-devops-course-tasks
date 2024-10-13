@@ -1,41 +1,60 @@
-# Task 2: Basic Infrastructure Configuration
+# Basic Infrastructure Configuration with Terraform
 
-## Objective
-This task focuses on creating Terraform code to configure the basic networking infrastructure required for a Kubernetes (K8s) cluster. The goal is to set up a Virtual Private Cloud (VPC) with public and private subnets, appropriate routing configurations, and security measures.
+## Overview
 
-## Infrastructure Overview
-The Terraform code provided in this repository configures the following resources:
+This repository contains Terraform code for configuring the basic networking infrastructure required for a Kubernetes (K8s) cluster on AWS. It includes the setup of a VPC, public and private subnets, an Internet Gateway, and routing configurations to facilitate communication within the VPC and to the outside world, NAT gateway, a bastion host t manage the resources.
 
-- **VPC**: A Virtual Private Cloud for isolating the Kubernetes cluster.
-- **Subnets**:
-    - 2 public subnets across two different availability zones (AZs).
-    - 2 private subnets across two different availability zones.
-- **Internet Gateway**: Allows internet access for resources in the public subnets.
-- **Routing Configuration**:
-    - Instances in all subnets can communicate with each other.
-    - Instances in public subnets can access the internet and accept connections from the outside.
-- **Security Groups**: Restrict inbound and outbound traffic according to defined rules.
-- **Bastion Host**: Provides secure access to instances in private subnets.
-- **NAT Gateway/Instance**: Enables instances in private subnets to access the internet.
+## Prerequisites
 
-## Steps to Set Up
+- Terraform installed on your local machine.
+- An AWS account with appropriate permissions to create VPCs, subnets, and other resources.
+- AWS CLI configured with your credentials.
 
-### 1. Write Terraform Code
-The Terraform configuration includes:
-- **VPC creation**.
-- **Public and private subnets**.
-- **Internet Gateway**.
-- **Route tables** to allow communication between instances and external traffic for public subnets.
+## Configuration
 
-### 2. Code Organization
-The Terraform code is split across several files for better organization:
-- **main.tf**: Contains the primary resource definitions.
-- **variables.tf**: All input variables are defined here.
-- **outputs.tf**: Specifies the output variables for the configuration.
+### Variables
 
-### 3. Verify the Configuration
-To verify the setup, run the following Terraform commands:
+All configurable parameters are stored in the `variables.tf` files located in the respective module directories and the root directory.
 
-```bash
-terraform init
-terraform plan
+### Resources
+
+1. **VPC**: The main VPC is created to host all resources.
+2. **Public Subnets**: Two public subnets are created in different Availability Zones (AZs).
+3. **Private Subnets**: Two private subnets are created in different AZs.
+4. **Internet Gateway**: An Internet Gateway is set up for public access.
+5. **Routing Configuration**:
+  - Routing tables are configured to allow instances in all subnets to communicate with each other.
+  - Public subnets can reach the outside world through the Internet Gateway.
+  - Private subnets can access the Internet via a NAT Gateway.
+
+## Deployment
+
+To deploy the infrastructure, follow these steps:
+
+1. **Initialize Terraform**:
+   ```bash
+   terraform init
+
+2. **Plan the Deployment**:
+   ```bash
+   terraform plan
+
+3. **Apply the Configuration**:
+   ```bash
+   terraform apply
+
+
+## Security Groups and Bastion Host
+
+Security groups are defined in the `security_groups` module. A bastion host is created for secure access to instances in the private subnets.
+
+## NAT Configuration
+
+A NAT Gateway is configured for instances in the private subnets to access the Internet.
+
+## GitHub Actions (Optional)
+
+There is set GitHub Actions pipeline for automated deployments.
+   
+   
+   
