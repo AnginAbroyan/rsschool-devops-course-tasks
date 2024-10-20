@@ -21,3 +21,7 @@ output "private_subnet" {
 output "igw_id" {
   value = aws_internet_gateway.internet_gtw
 }
+
+output "vpc_cidr" {
+  value = aws_vpc.vpc.cidr_block
+}
