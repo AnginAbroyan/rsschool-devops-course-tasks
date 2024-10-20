@@ -29,7 +29,7 @@ variable "project_name" {
 
 variable "tags" {
   default = {
-    Project = "task2"
+    Project = "task3"
   }
 }
 
