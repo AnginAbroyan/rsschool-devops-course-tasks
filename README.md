@@ -1,60 +1,54 @@
-# Basic Infrastructure Configuration with Terraform
+# k3s Kubernetes Cluster on AWS
 
 ## Overview
 
-This repository contains Terraform code for configuring the basic networking infrastructure required for a Kubernetes (K8s) cluster on AWS. It includes the setup of a VPC, public and private subnets, an Internet Gateway, and routing configurations to facilitate communication within the VPC and to the outside world, NAT gateway, a bastion host t manage the resources.
+This project outlines the process of setting up a lightweight Kubernetes (k3s) cluster on AWS, managing the infrastructure using Terraform, and verifying the cluster by deploying a simple workload. The k3s distribution is ideal for smaller clusters due to its reduced resource requirements and simplified configuration. We will set up EC2 instances for master and worker nodes, accessible via a bastion host.
 
-## Prerequisites
+## Deploy the Necessary Infrastructure
 
-- Terraform installed on your local machine.
-- An AWS account with appropriate permissions to create VPCs, subnets, and other resources.
-- AWS CLI configured with your credentials.
+The infrastructure required for the project, including the VPC, subnets, security groups, and EC2 instances (Bastion Host, k3s_master, and k3s_worker), is created using Terraform. To provision the resources, follow these steps:
 
-## Configuration
+1. `terraform init`
+2. `terraform plan`
+3. `terraform apply`
 
-### Variables
+This will set up all necessary AWS components. Once the infrastructure is in place, connect to the k3s_master node through the Bastion Host to install k3s.
 
-All configurable parameters are stored in the `variables.tf` files located in the respective module directories and the root directory.
+1. SSH into the k3s_master via the Bastion Host:
+   `ssh -i "ssh-key.pem" -J ec2-user@<bastion-public-ip> ec2-user@<master-private-ip>`
 
-### Resources
+2. Install k3s on the Master Node:
+   `curl -sfL https://get.k3s.io | sh -`
 
-1. **VPC**: The main VPC is created to host all resources.
-2. **Public Subnets**: Two public subnets are created in different Availability Zones (AZs).
-3. **Private Subnets**: Two private subnets are created in different AZs.
-4. **Internet Gateway**: An Internet Gateway is set up for public access.
-5. **Routing Configuration**:
-  - Routing tables are configured to allow instances in all subnets to communicate with each other.
-  - Public subnets can reach the outside world through the Internet Gateway.
-  - Private subnets can access the Internet via a NAT Gateway.
+3. Retrieve the Token for Worker Node Setup:
+   `sudo cat /var/lib/rancher/k3s/server/node-token`
 
-## Deployment
+## Join the Worker Node to the Cluster
 
-To deploy the infrastructure, follow these steps:
+1. SSH into the k3s_worker via the Bastion Host:
+   `ssh -i "ssh-key.pem" -J ec2-user@<bastion-public-ip> ec2-user@<worker-private-ip>`
 
-1. **Initialize Terraform**:
-   ```bash
-   terraform init
+2. Install k3s on the Worker Node to connect it to the cluster:
+   `sudo curl -sfL https://get.k3s.io | K3S_URL=https://<master-private-ip>:6443 K3S_TOKEN=<token> sh -`
 
-2. **Plan the Deployment**:
-   ```bash
-   terraform plan
+## Deployment Process
 
-3. **Apply the Configuration**:
-   ```bash
-   terraform apply
+### Establish an SSH Tunnel to Access the Cluster
 
+To manage the Kubernetes cluster from your local machine, set up an SSH tunnel through the Bastion Host, forwarding traffic to the k3s_master node.
 
-## Security Groups and Bastion Host
+1. Create an SSH Tunnel:
+   `ssh -i "ssh-key.pem" -L 6443:<master-private-ip>:6443 ec2-user@<bastion-public-ip>`
 
-Security groups are defined in the `security_groups` module. A bastion host is created for secure access to instances in the private subnets.
+This will forward local port 6443 to the Kubernetes API server on the k3s_master node. Keep the terminal open to maintain the tunnel connection.
 
-## NAT Configuration
+### Deploy a Workload on the Cluster
 
-A NAT Gateway is configured for instances in the private subnets to access the Internet.
+1. In a new terminal, deploy a sample pod:
+   `kubectl apply -f https://k8s.io/examples/pods/simple-pod.yaml`
 
-## GitHub Actions (Optional)
+2. Check the Pod status:
+   `kubectl get pods`
 
-There is set GitHub Actions pipeline for automated deployments.
-   
-   
-   
+3. Verify the Cluster Nodes:
+   `kubectl get nodes`
