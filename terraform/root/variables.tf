@@ -1,5 +1,5 @@
 variable "region" {
-  default = "eu-west-3" # Frankfurt
+  default = "eu-west-3" # Paris
 }
 
 #VPC variables
@@ -49,3 +49,9 @@ variable "ssh_key_name" {
   type        = string
   default     = "sshkey"
 }
+
+
+///K3S variables
+
+variable "k3s_ami" { default = "ami-045a8ab02aadf4f88" }
+variable "k3s_instance_type" { default = "t2.micro" }
